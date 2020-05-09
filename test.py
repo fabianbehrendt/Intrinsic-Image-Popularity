@@ -26,7 +26,7 @@ def predict(image, model):
     # print(r'Popularity score: %.2f' % preds.item() * 100)
     return '%.0f' % (preds.item() * 100)
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--image_path', type=str, default='images/')
     config = parser.parse_args()
@@ -36,6 +36,10 @@ if __name__ == '__main__':
     model.fc = torch.nn.Linear(in_features=2048, out_features=1)
     model.load_state_dict(torch.load('/content/Intrinsic-Image-Popularity/model/model-resnet50.pth', map_location=device)) 
     model.eval().to(device)
+
+    if not os.path.isdir(config.image_path):
+      print("ERROR: '" + config.image_path + "' is not a directory!")
+      return
 
     count = 0
     max_count = 0
@@ -47,6 +51,12 @@ if __name__ == '__main__':
       if (file_extension in ['.png'] and '_' not in file_name):
         max_count += 1
         image_names.append(file_name + file_extension)
+    
+    if len(image_names) == 0:
+      print("ERROR: '" + config.image_path + "' does not contain any images to rename!")
+      return
+    
+    print("Start renaming of " + str(len(image_names)) + " image(s)...")
 
     for image_name in image_names:
       count += 1
@@ -59,3 +69,6 @@ if __name__ == '__main__':
       os.rename(full_path, os.path.join(config.image_path, str(score) + '_' + image_name))
       
       print(str(count) + '/' + str(max_count))
+
+if __name__ == '__main__':
+    main()
